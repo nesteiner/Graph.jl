@@ -17,6 +17,10 @@ using Graph, Test
   # removeEdge!(graph, 2, 4)
   # println(graph)
 
-  removeVertex!(graph, 2)
+  # removeVertex!(graph, 2)
+  # println(graph)
+
+  replaceVertex!(graph, 2, -1)
+  replaceWeight!(graph, 1, -1, 10)
   println(graph)
 end

@@ -19,11 +19,18 @@ end
 2. insert edge
 3. remove vertex
 4. remove edge
+
+
+
 5. bfs iterate
 6. dfs iterate
 
 7. vertex count
 8. edge count
+9. replace weight
+10. replace vertex
+11.find weight
+
 =#
 
 function findEdges(graph::DirectedGraph{T}, vertex::T) where T
@@ -97,7 +104,42 @@ end
 vertexCount(graph::DirectedGraph) = graph.vertexCount
 edgeCount(graph::DirectedGraph) = graph.edgeCount
 
+function replaceWeight!(graph::DirectedGraph{T}, vertex::T, otherVertex::T, weight::Number) where T
+  nodeLeft = findfirst(adjlist -> adjlist.vertex == vertex, graph.adjlists)
+  nodeRight = findfirst(adjlist -> adjlist.vertex == otherVertex, graph.adjlists)
+
+  if isnothing(nodeLeft) || isnothing(nodeRight)
+    throw("cannot replace weight on a non exists vertex")
+  else
+    edges = findEdges(graph, vertex)
+    node = findfirst(edge -> edge.vertex == otherVertex, edges)
+    if !isnothing(node)
+      dataof(node).weight = weight
+    else
+      throw("there is no edge between these two vertex")
+    end
+  end
+end
+
+function replaceVertex!(graph::DirectedGraph{T}, vertex::T, otherVertex::T) where T
+  node = findfirst(adjlist -> adjlist.vertex == vertex, graph.adjlists)
+
+  if isnothing(node)
+    throw("cannot replace on a non-exist vertex")
+  else
+    dataof(node).vertex = otherVertex
+
+    for adjlist in graph.adjlists
+      edges = adjlist.edges
+      _node = findfirst(edge -> edge.vertex == vertex, edges)
+
+      if !isnothing(_node)
+        dataof(_node).vertex = otherVertex
+      end
+    end
+  end
+end
 
 export DirectedGraph
-export insertVertex!, insertEdge!, removeVertex!, removeEdge!, vertexCount, edgeCount
+export insertVertex!, insertEdge!, removeVertex!, removeEdge!, vertexCount, edgeCount, replaceWeight!, replaceVertex!
 end # module
