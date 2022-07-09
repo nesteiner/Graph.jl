@@ -6,6 +6,7 @@ import Base: show, iterate
 include("Edge.jl")
 include("AdjList.jl")
 
+
 mutable struct DirectedGraph{T}
   vertexCount::Int
   edgeCount::Int
@@ -13,6 +14,7 @@ mutable struct DirectedGraph{T}
 
   DirectedGraph(E::DataType) = new{E}(0, 0, List(AdjList{E}))
 end
+
 
 #=
 1. insert vertex
@@ -140,6 +142,9 @@ function replaceVertex!(graph::DirectedGraph{T}, vertex::T, otherVertex::T) wher
   end
 end
 
+
+include("Iterate.jl")
+bfsiterate(graph::DirectedGraph{T}) where T = BFSIterator(graph)
 export DirectedGraph
-export insertVertex!, insertEdge!, removeVertex!, removeEdge!, vertexCount, edgeCount, replaceWeight!, replaceVertex!
+export insertVertex!, insertEdge!, removeVertex!, removeEdge!, vertexCount, edgeCount, replaceWeight!, replaceVertex!, bfsiterate
 end # module
