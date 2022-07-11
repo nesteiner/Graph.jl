@@ -145,6 +145,7 @@ end
 
 include("Iterate.jl")
 bfsiterate(graph::DirectedGraph{T}) where T = BFSIterator(graph)
+dfsiterate(graph::DirectedGraph{T}) where T = DFSIterator(graph)
 export DirectedGraph
-export insertVertex!, insertEdge!, removeVertex!, removeEdge!, vertexCount, edgeCount, replaceWeight!, replaceVertex!, bfsiterate
+export insertVertex!, insertEdge!, removeVertex!, removeEdge!, vertexCount, edgeCount, replaceWeight!, replaceVertex!, bfsiterate, dfsiterate
 end # module
