@@ -1,9 +1,9 @@
 mutable struct BFSIterator{T}
-  graph::DirectedGraph{T}
+  graph::AbstractGraph{T}
 end
 
 mutable struct DFSIterator{T}
-  graph::DirectedGraph{T}
+  graph::AbstractGraph{T}
 end
 
 @enum Color begin

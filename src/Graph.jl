@@ -6,8 +6,8 @@ import Base: show, iterate
 include("Edge.jl")
 include("AdjList.jl")
 
-
-mutable struct DirectedGraph{T}
+abstract type AbstractGraph{T} end
+mutable struct DirectedGraph{T} <: AbstractGraph{T}
   vertexCount::Int
   edgeCount::Int
   adjlists::List{AdjList{T}}
@@ -15,6 +15,13 @@ mutable struct DirectedGraph{T}
   DirectedGraph(E::DataType) = new{E}(0, 0, List(AdjList{E}))
 end
 
+mutable struct UnDirectedGraph{T} <: AbstractGraph{T}
+  vertexCount::Int
+  edgeCount::Int
+  adjlists::List{AdjList{T}}
+
+  UnDirectedGraph(E::DataType) = new{E}(0, 0, List(AdjList{E}))
+end
 
 #=
 1. insert vertex
@@ -35,7 +42,7 @@ end
 
 =#
 
-function findEdges(graph::DirectedGraph{T}, vertex::T) where T
+function findEdges(graph::AbstractGraph{T}, vertex::T) where T
   node = findfirst(adjlist -> adjlist.vertex == vertex, graph.adjlists)
   if !isnothing(node)
     return dataof(node).edges
@@ -44,7 +51,7 @@ function findEdges(graph::DirectedGraph{T}, vertex::T) where T
   end
 end
 
-function insertVertex!(graph::DirectedGraph{T}, data::T) where T
+function insertVertex!(graph::AbstractGraph{T}, data::T) where T
   adjlist = AdjList{T}(data, List(Edge{T}))
   push!(graph.adjlists, adjlist)
   graph.vertexCount += 1
@@ -63,7 +70,20 @@ function insertEdge!(graph::DirectedGraph{T}, vertex::T, otherVertex::T, weight:
   end
 end
 
-function removeVertex!(graph::DirectedGraph{T}, vertex::T) where T
+function insertEdge!(graph::UnDirectedGraph{T}, vertex::T, otherVertex::T, weight::Number = 0) where T
+  nodeLeft = findfirst(adjlist -> adjlist.vertex == vertex, graph.adjlists)
+  nodeRight = findfirst(adjlist -> adjlist.vertex == otherVertex, graph.adjlists)
+
+  if isnothing(nodeLeft) || isnothing(nodeRight)
+    throw("cannot insert edge on non-exist vertex")
+  else
+    push!(dataof(nodeLeft).edges, Edge(otherVertex, weight))
+    push!(dataof(nodeRight).edges, Edge(vertex, weight))
+    graph.edgeCount += 1
+  end
+end
+
+function removeVertex!(graph::AbstractGraph{T}, vertex::T) where T
   node = findfirst(adjlist -> adjlist.vertex == vertex, graph.adjlists)
   if isnothing(node)
     throw("cannot delete on a non-exist vertex")
@@ -100,11 +120,23 @@ function removeEdge!(graph::DirectedGraph{T}, vertex::T, otherVertex::T) where T
     else
       throw("cannot delete edge on a non-exist vertex")
     end
+
+    edges = findEdges(graph, otherVertex)
+    node = findfirst(edge -> edge.vertex == otherVertex, edges)
+
+    if !isnothing(node)
+      popat!(edges, node)
+
+      graph.edgeCount -= 1
+    else
+      throw("cannot delete edge on a non-exist vertex")
+    end
+
   end
 end
 
-vertexCount(graph::DirectedGraph) = graph.vertexCount
-edgeCount(graph::DirectedGraph) = graph.edgeCount
+vertexCount(graph::AbstractGraph) = graph.vertexCount
+edgeCount(graph::AbstractGraph) = graph.edgeCount
 
 function replaceWeight!(graph::DirectedGraph{T}, vertex::T, otherVertex::T, weight::Number) where T
   nodeLeft = findfirst(adjlist -> adjlist.vertex == vertex, graph.adjlists)
@@ -123,9 +155,35 @@ function replaceWeight!(graph::DirectedGraph{T}, vertex::T, otherVertex::T, weig
   end
 end
 
-function replaceVertex!(graph::DirectedGraph{T}, vertex::T, otherVertex::T) where T
-  node = findfirst(adjlist -> adjlist.vertex == vertex, graph.adjlists)
+function replaceWeight!(graph::UnDirectedGraph{T}, vertex::T, otherVertex::T, weight::Number) where T
+  nodeLeft = findfirst(adjlist -> adjlist.vertex == vertex, graph.adjlists)
+  nodeRight = findfirst(adjlist -> adjlist.vertex == otherVertex, graph.adjlists)
 
+  if isnothing(nodeLeft) || isnothing(nodeRight)
+    throw("cannot replace weight on a non exists vertex")
+  else
+    edges = findEdges(graph, vertex)
+    node = findfirst(edge -> edge.vertex == otherVertex, edges)
+    if !isnothing(node)
+      dataof(node).weight = weight
+    else
+      throw("there is no edge between these two vertex")
+    end
+
+    edges = findEdges(graph, otherVertex)
+    node = findfirst(edge -> edge.vertex == vertex, edges)
+    if !isnothing(node)
+      dataof(node).weight = weight
+    else
+      throw("there is no edge between these two vertex")
+    end
+
+  end
+end
+
+function replaceVertex!(graph::AbstractGraph{T}, vertex::T, otherVertex::T) where T
+  node = findfirst(adjlist -> adjlist.vertex == vertex, graph.adjlists)
+  
   if isnothing(node)
     throw("cannot replace on a non-exist vertex")
   else
@@ -144,8 +202,8 @@ end
 
 
 include("Iterate.jl")
-bfsiterate(graph::DirectedGraph{T}) where T = BFSIterator(graph)
-dfsiterate(graph::DirectedGraph{T}) where T = DFSIterator(graph)
-export DirectedGraph
+bfsiterate(graph::AbstractGraph{T}) where T = BFSIterator(graph)
+dfsiterate(graph::AbstractGraph{T}) where T = DFSIterator(graph)
+export DirectedGraph, UnDirectedGraph
 export insertVertex!, insertEdge!, removeVertex!, removeEdge!, vertexCount, edgeCount, replaceWeight!, replaceVertex!, bfsiterate, dfsiterate
 end # module
