@@ -200,10 +200,61 @@ function replaceVertex!(graph::AbstractGraph{T}, vertex::T, otherVertex::T) wher
   end
 end
 
+function hascycle(graph::DirectedGraph{T}, vertex::T) where T
+  node = findfirst(adjlist -> adjlist.vertex == vertex, graph.adjlists)
+  isnothing(node) && throw("cannot call hascycle on a non-exist vertex")
+
+  for adjlist in graph.adjlists
+    edges = adjlist.edges
+    _node = findfirst(edge -> edge.vertex == vertex, edges)
+
+    if !isnothing(_node)
+      return true
+    end
+  end
+
+  return false
+end
+
+function hascycle(graph::UnDirectedGraph{T}, vertex::T) where T
+  node = findfirst(adjlist -> adjlist.vertex == vertex, graph.adjlists)
+  isnothing(node) && throw("cannot call hascycle on a non-exist vertex")
+  
+  visited = Dict{T, Bool}()
+
+  visited[dataof(node).vertex] = true
+  for edge in dataof(node).edges
+    visited[edge.vertex] = true
+  end
+  
+  for adjlist in graph.adjlists
+    start = adjlist.vertex
+    if !haskey(visited, start)
+      
+    end
+  end
+  
+  return false
+end
 
 include("Iterate.jl")
-bfsiterate(graph::AbstractGraph{T}) where T = BFSIterator(graph)
-dfsiterate(graph::AbstractGraph{T}) where T = DFSIterator(graph)
+bfsiterate(graph::AbstractGraph{T}) where T = BFSIterator(graph, nothing)
+dfsiterate(graph::AbstractGraph{T}) where T = DFSIterator(graph, nothing)
+bfsiterate(graph::AbstractGraph{T}, start::T) where T = begin
+  node = findfirst(adjlist -> adjlist.vertex == start, graph.adjlists)
+  isnothing(node) && throw("cannot iterate from an non-exist vertex")
+
+  return BFSIterator(graph, dataof(node))
+end
+
+dfsiterate(graph::AbstractGraph{T}, start::T) where T = begin
+  node = findfirst(adjlist -> adjlist.vertex == start, graph.adjlists)
+  isnothing(node) && throw("cannot iterate from an non-exist vertex")
+
+  return DFSIterator(graph, dataof(node))
+end
+
 export DirectedGraph, UnDirectedGraph
 export insertVertex!, insertEdge!, removeVertex!, removeEdge!, vertexCount, edgeCount, replaceWeight!, replaceVertex!, bfsiterate, dfsiterate
+export hascycle
 end # module

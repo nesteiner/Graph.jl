@@ -1,9 +1,11 @@
 mutable struct BFSIterator{T}
   graph::AbstractGraph{T}
+  start::Union{AdjList{T}, Nothing}
 end
 
 mutable struct DFSIterator{T}
   graph::AbstractGraph{T}
+  start::Union{AdjList{T}, Nothing}
 end
 
 @enum Color begin
@@ -25,16 +27,22 @@ end
 function iterate(iterator::BFSIterator{T}) where T
   state = BFSState{T}(Queue(T), Dict{T, Color}())
 
+  if vertexCount(iterator.graph) == 0
+    return nothing
+  end
+
   for adjlist in iterator.graph.adjlists
     vertex = adjlist.vertex
     state.visited[vertex] = White
   end
 
-  if vertexCount(iterator.graph) == 0
-    return nothing
+  firstVertex = nothing
+  if isnothing(iterator.start)
+    firstVertex = first(iterator.graph.adjlists).vertex
+  else
+    firstVertex = iterator.start.vertex
   end
 
-  firstVertex = first(iterator.graph.adjlists).vertex
   state.visited[firstVertex] = Black
   edges = findEdges(iterator.graph, firstVertex)
   
@@ -73,16 +81,24 @@ end
 function iterate(iterator::DFSIterator{T}) where T
   state = DFSState{T}(Stack(T), Dict{T, Color}())
 
+  if vertexCount(iterator.graph) == 0
+    return nothing
+  end
+
+  firstVertex = nothing
+  if isnothing(iterator.start)
+    firstVertex = first(iterator.graph.adjlists).vertex
+  else
+    firstVertex = iterator.start.vertex
+  end
+  
+
   for adjlist in iterator.graph.adjlists
     vertex = adjlist.vertex
     state.visited[vertex] = White
   end
 
-  if vertexCount(iterator.graph) == 0
-    return nothing
-  end
-
-  firstVertex = first(iterator.graph.adjlists).vertex
+  
   state.visited[firstVertex] = Black
 
   for edge in findEdges(iterator.graph, firstVertex)
