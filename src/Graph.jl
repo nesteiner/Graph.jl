@@ -65,8 +65,12 @@ function insertEdge!(graph::DirectedGraph{T}, vertex::T, otherVertex::T, weight:
     throw("cannot insert edge on non-exist vertex")
   else
     # pushnext!(graph.adjlists, node1, Edge(otherVertex, weight))
-    push!(dataof(nodeLeft).edges, Edge(otherVertex, weight))
-    graph.edgeCount += 1
+    edges = dataof(nodeLeft).edges
+    node = findfirst(edge -> edge.vertex == otherVertex, edges)
+    if isnothing(node)
+      push!(dataof(nodeLeft).edges, Edge(otherVertex, weight))
+      graph.edgeCount += 1
+    end
   end
 end
 
@@ -77,8 +81,20 @@ function insertEdge!(graph::UnDirectedGraph{T}, vertex::T, otherVertex::T, weigh
   if isnothing(nodeLeft) || isnothing(nodeRight)
     throw("cannot insert edge on non-exist vertex")
   else
-    push!(dataof(nodeLeft).edges, Edge(otherVertex, weight))
-    push!(dataof(nodeRight).edges, Edge(vertex, weight))
+
+    edges = dataof(nodeLeft).edges
+    node = findfirst(edge -> edge.vertex == otherVertex, edges)
+
+    if isnothing(node)
+      push!(dataof(nodeLeft).edges, Edge(otherVertex, weight))
+    end
+
+    edges = dataof(nodeRight).edges
+    node = findfirst(edge -> edge.vertex == vertex, edges)
+    if isnothing(node)
+      push!(dataof(nodeRight).edges, Edge(vertex, weight))
+    end
+    
     graph.edgeCount += 1
   end
 end

@@ -149,4 +149,17 @@ using Graph, Test
     removeEdge!(graph, 3, 6)
     @test hascycle(graph) == true
   end
+
+  @testset "test undirect graph insert edges" begin
+    graph = UnDirectedGraph(Int)
+
+    for i in 1:2
+      insertVertex!(graph, i)
+    end
+
+    insertEdge!(graph, 1, 2)
+    insertEdge!(graph, 2, 1)
+
+    println(graph)
+  end
 end
