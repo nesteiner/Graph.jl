@@ -121,12 +121,33 @@ function removeEdge!(graph::DirectedGraph{T}, vertex::T, otherVertex::T) where T
       throw("cannot delete edge on a non-exist vertex")
     end
 
-    edges = findEdges(graph, otherVertex)
+  end
+end
+
+function removeEdge!(graph::UnDirectedGraph{T}, vertex::T, otherVertex::T) where T
+  nodeLeft = findfirst(adjlist -> adjlist.vertex == vertex, graph.adjlists)
+  nodeRight = findfirst(adjlist -> adjlist.vertex == otherVertex, graph.adjlists)
+
+  if isnothing(nodeLeft) || isnothing(nodeRight)
+    throw("cannot delete edge on a non-exist vertex")
+  else
+    edges = findEdges(graph, vertex)
     node = findfirst(edge -> edge.vertex == otherVertex, edges)
 
     if !isnothing(node)
       popat!(edges, node)
+      
+      graph.edgeCount -= 1
+    else
+      throw("cannot delete edge on a non-exist vertex")
+    end
 
+    edges = findEdges(graph, otherVertex)
+    node = findfirst(edge -> edge.vertex == vertex, edges)
+
+    if !isnothing(node)
+      popat!(edges, node)
+      
       graph.edgeCount -= 1
     else
       throw("cannot delete edge on a non-exist vertex")
@@ -200,15 +221,14 @@ function replaceVertex!(graph::AbstractGraph{T}, vertex::T, otherVertex::T) wher
   end
 end
 
-function hascycle(graph::DirectedGraph{T}, vertex::T) where T
-  node = findfirst(adjlist -> adjlist.vertex == vertex, graph.adjlists)
-  isnothing(node) && throw("cannot call hascycle on a non-exist vertex")
-
-  for adjlist in graph.adjlists
-    edges = adjlist.edges
-    _node = findfirst(edge -> edge.vertex == vertex, edges)
-
-    if !isnothing(_node)
+function iscyclicutil(graph::AbstractGraph{T}, start::T, visited::Dict{T, Bool}, parent::Union{T, Nothing}) where T
+  visited[start] = true
+  for edge in findEdges(graph, start)
+    if !visited[edge.vertex]
+      if iscyclicutil(graph, edge.vertex, visited, start)
+        return true
+      end
+    elseif !isnothing(edge.vertex) && edge.vertex != parent
       return true
     end
   end
@@ -216,21 +236,20 @@ function hascycle(graph::DirectedGraph{T}, vertex::T) where T
   return false
 end
 
-function hascycle(graph::UnDirectedGraph{T}, vertex::T) where T
-  node = findfirst(adjlist -> adjlist.vertex == vertex, graph.adjlists)
-  isnothing(node) && throw("cannot call hascycle on a non-exist vertex")
-  
+function hascycle(graph::AbstractGraph{T}) where T
   visited = Dict{T, Bool}()
 
-  visited[dataof(node).vertex] = true
-  for edge in dataof(node).edges
-    visited[edge.vertex] = true
-  end
-  
   for adjlist in graph.adjlists
-    start = adjlist.vertex
-    if !haskey(visited, start)
-      
+    visited[adjlist.vertex] = false
+  end
+
+  for adjlist in graph.adjlists
+    vertex = adjlist.vertex
+
+    if !visited[vertex]
+      if iscyclicutil(graph, vertex, visited, nothing)
+        return true
+      end
     end
   end
   

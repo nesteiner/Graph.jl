@@ -35,3 +35,8 @@
     println(value)
   end
 #+end_src
+
+*** hascycle
+#+begin_src julia
+  hascycle(graph)
+#+end_src

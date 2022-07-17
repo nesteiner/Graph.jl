@@ -12,11 +12,11 @@ uuid = "b77e0a4c-d291-57a0-90e8-8db25a27a240"
 
 [[deps.LinkedList]]
 deps = ["Test"]
-git-tree-sha1 = "4f13ba06b98d3e4d34433ddf9a11eead2bf8d4f0"
+git-tree-sha1 = "27622965ef38bb5c1f291d1c7db843987634194c"
 repo-rev = "master"
 repo-url = "https://github.com/nesteiner/LinkedList.jl"
 uuid = "8bb5f1f9-8766-4891-94ae-ce2d9eef0394"
-version = "0.1.0"
+version = "0.2.0"
 
 [[deps.Logging]]
 uuid = "56ddb016-857b-54e1-b83d-db4d58db5568"
