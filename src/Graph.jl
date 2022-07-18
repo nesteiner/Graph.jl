@@ -158,8 +158,6 @@ function removeEdge!(graph::UnDirectedGraph{T}, vertex::T, otherVertex::T) where
 
     if !isnothing(node)
       popat!(edges, node)
-      
-      graph.edgeCount -= 1
     else
       throw("cannot delete edge on a non-exist vertex")
     end
@@ -169,12 +167,11 @@ function removeEdge!(graph::UnDirectedGraph{T}, vertex::T, otherVertex::T) where
 
     if !isnothing(node)
       popat!(edges, node)
-      
-      graph.edgeCount -= 1
     else
       throw("cannot delete edge on a non-exist vertex")
     end
 
+    graph.edgeCount -= 1
   end
 end
 
