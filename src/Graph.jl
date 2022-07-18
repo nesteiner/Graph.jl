@@ -86,15 +86,21 @@ function insertEdge!(graph::UnDirectedGraph{T}, vertex::T, otherVertex::T, weigh
     node = findfirst(edge -> edge.vertex == otherVertex, edges)
 
     if isnothing(node)
-      push!(dataof(nodeLeft).edges, Edge(otherVertex, weight))
+      len = length(edges)
+      push!(edges, Edge(otherVertex, weight))
+      @assert length(edges) == len + 1 "push edge error"
     end
 
     edges = dataof(nodeRight).edges
     node = findfirst(edge -> edge.vertex == vertex, edges)
+
     if isnothing(node)
-      push!(dataof(nodeRight).edges, Edge(vertex, weight))
+      len = length(edges)
+      push!(edges, Edge(vertex, weight))
+      @assert length(edges) == len + 1 "push edge error"
     end
-    
+
+
     graph.edgeCount += 1
   end
 end
